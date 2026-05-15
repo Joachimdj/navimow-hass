@@ -1,5 +1,5 @@
 {
-  "domain": "navimow_hass",
+  "domain": "navimow",
   "name": "Navimow-hass",
   "codeowners": ["@joachimdj"],
   "config_flow": true,
