@@ -53,7 +53,6 @@ class NavimowLawnMower(CoordinatorEntity[NavimowCoordinator], LawnMowerEntity):
     _attr_supported_features = (
         LawnMowerEntityFeature.START_MOWING
         | LawnMowerEntityFeature.DOCK
-        | LawnMowerEntityFeature.RETURN_TO_BASE
     )
     _attr_has_entity_name = True
 
