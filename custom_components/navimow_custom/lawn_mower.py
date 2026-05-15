@@ -1,4 +1,4 @@
-"""Lawn mower platform for Navimow integration."""
+"""Lawn mower platform for Navimow Custom integration."""
 import logging
 from typing import Any
 
@@ -27,7 +27,6 @@ async def async_setup_entry(
     config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up lawn mower entities from a config entry."""
     data = hass.data[DOMAIN][config_entry.entry_id]
     api: MowerAPI = data["api"]
     devices = data["devices"]
@@ -49,7 +48,7 @@ async def async_setup_entry(
 
 
 class NavimowLawnMower(CoordinatorEntity[NavimowCoordinator], LawnMowerEntity):
-    """Representation of a Navimow lawn mower."""
+    """Representation of a Navimow Custom lawn mower."""
 
     _attr_supported_features = (
         LawnMowerEntityFeature.START_MOWING
@@ -66,7 +65,6 @@ class NavimowLawnMower(CoordinatorEntity[NavimowCoordinator], LawnMowerEntity):
         device_name: str,
         device_info: Any,
     ) -> None:
-        """Initialize the lawn mower entity."""
         super().__init__(coordinator)
         self._api = api
         self._device_id = device_id
@@ -86,7 +84,6 @@ class NavimowLawnMower(CoordinatorEntity[NavimowCoordinator], LawnMowerEntity):
 
     @property
     def activity(self) -> LawnMowerActivity:
-        """Return the current activity."""
         if not self.coordinator.data:
             return LawnMowerActivity.ERROR
 
@@ -103,7 +100,6 @@ class NavimowLawnMower(CoordinatorEntity[NavimowCoordinator], LawnMowerEntity):
             return LawnMowerActivity.ERROR
 
     async def async_start_mowing(self) -> None:
-        """Start mowing."""
         try:
             await self._api.async_send_command(self._device_id, MowerCommand.START)
             await self.coordinator.async_request_refresh()
@@ -112,7 +108,6 @@ class NavimowLawnMower(CoordinatorEntity[NavimowCoordinator], LawnMowerEntity):
             raise
 
     async def async_pause_mowing(self) -> None:
-        """Pause mowing."""
         try:
             await self._api.async_send_command(self._device_id, MowerCommand.PAUSE)
             await self.coordinator.async_request_refresh()
@@ -121,7 +116,6 @@ class NavimowLawnMower(CoordinatorEntity[NavimowCoordinator], LawnMowerEntity):
             raise
 
     async def async_dock(self) -> None:
-        """Dock the mower."""
         try:
             await self._api.async_send_command(self._device_id, MowerCommand.DOCK)
             await self.coordinator.async_request_refresh()
@@ -131,7 +125,6 @@ class NavimowLawnMower(CoordinatorEntity[NavimowCoordinator], LawnMowerEntity):
 
     @property
     def available(self) -> bool:
-        """Return if entity is available."""
         if self.coordinator.get_device_state() is not None:
             return True
         return super().available

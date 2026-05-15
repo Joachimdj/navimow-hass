@@ -1,6 +1,6 @@
 {
-  "domain": "navimow",
-  "name": "Navimow",
+  "domain": "navimow_custom",
+  "name": "Navimow Custom",
   "codeowners": ["@joachimdj"],
   "config_flow": true,
   "documentation": "https://github.com/joachimdj/NavimowHA",

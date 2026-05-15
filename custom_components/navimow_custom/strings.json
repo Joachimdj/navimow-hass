@@ -1,0 +1,52 @@
+{
+  "config": {
+    "step": {
+      "oauth2_authorize": {
+        "description": "Click 'Confirm' to authorize Home Assistant to access your Navimow account.\n\nYou will be redirected to the Navimow login page to complete authentication."
+      },
+      "user": {
+        "description": "Set up Navimow Custom integration with your account."
+      }
+    },
+    "abort": {
+      "missing_config": "CLIENT_ID or CLIENT_SECRET not configured. Please check your integration configuration.",
+      "reauth_successful": "Re-authentication successful.",
+      "already_configured": "Navimow Custom is already configured."
+    }
+  },
+  "entity": {
+    "lawn_mower": {
+      "navimow_custom": {
+        "name": "Navimow Custom Lawn Mower"
+      }
+    },
+    "sensor": {
+      "navimow_custom": {
+        "battery": { "name": "Battery" },
+        "signal_strength": { "name": "Signal Strength" },
+        "mowing_time": { "name": "Mowing Time" },
+        "total_mowing_time": { "name": "Total Mowing Time" },
+        "error_code": { "name": "Error Code" },
+        "error_message": { "name": "Error Message" },
+        "latitude": { "name": "Latitude" },
+        "longitude": { "name": "Longitude" }
+      }
+    }
+  },
+  "service": {
+    "set_blade_height": {
+      "name": "Set blade height",
+      "description": "Set the mower blade height.",
+      "fields": {
+        "device_id": {
+          "name": "Device ID",
+          "description": "Navimow device identifier."
+        },
+        "height": {
+          "name": "Height",
+          "description": "Blade height level."
+        }
+      }
+    }
+  }
+}
