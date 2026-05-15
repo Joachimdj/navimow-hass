@@ -1,10 +1,10 @@
 {
-  "domain": "navimow",
-  "name": "Navimow",
-  "codeowners": ["@segwaynavimow"],
+  "domain": "navimow_hass",
+  "name": "Navimow-hass",
+  "codeowners": ["@joachimdj"],
   "config_flow": true,
-  "documentation": "https://github.com/segwaynavimow/NavimowHA",
-  "issue_tracker": "https://github.com/segwaynavimow/NavimowHA/issues",
+  "documentation": "https://github.com/joachimdj/NavimowHA",
+  "issue_tracker": "https://github.com/joachimdj/NavimowHA/issues",
   "requirements": ["navimow-sdk>=0.1.0"],
   "version": "2.0.0",
   "homeassistant": "2026.1.0"
