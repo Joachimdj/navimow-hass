@@ -82,7 +82,6 @@ SENSOR_DESCRIPTIONS: tuple[NavimowSensorEntityDescription, ...] = (
     NavimowSensorEntityDescription(
         key="error_message",
         translation_key="error_message",
-        device_class=SensorDeviceClass.TEXT,
         entity_registry_enabled_default=False,
         value_fn=lambda coordinator: (
             status.error_message if (status := coordinator.get_device_state()) else None
