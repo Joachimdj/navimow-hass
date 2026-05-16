@@ -90,7 +90,6 @@ SENSOR_DESCRIPTIONS: tuple[NavimowSensorEntityDescription, ...] = (
     NavimowSensorEntityDescription(
         key="latitude",
         translation_key="latitude",
-        device_class=SensorDeviceClass.LATITUDE,
         state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=False,
         value_fn=lambda coordinator: (
@@ -102,7 +101,6 @@ SENSOR_DESCRIPTIONS: tuple[NavimowSensorEntityDescription, ...] = (
     NavimowSensorEntityDescription(
         key="longitude",
         translation_key="longitude",
-        device_class=SensorDeviceClass.LONGITUDE,
         state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=False,
         value_fn=lambda coordinator: (
