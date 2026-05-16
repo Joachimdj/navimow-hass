@@ -1,6 +1,7 @@
 """The Navimow Custom integration."""
 import asyncio
 import importlib
+import json
 import logging
 from typing import Any
 from urllib.parse import urlparse
@@ -68,6 +69,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             return "*" * len(value)
         return f"{value[:2]}***{value[-2:]}"
 
+    def _log_api_response(label: str, payload: Any) -> None:
+        """Log raw API response payloads for troubleshooting."""
+        try:
+            _LOGGER.warning(
+                "Navimow API response (%s): %s",
+                label,
+                json.dumps(payload, default=lambda obj: vars(obj), ensure_ascii=True),
+            )
+        except Exception:
+            _LOGGER.warning("Navimow API response (%s) fallback: %s", label, payload)
+
     try:
         implementation = await config_entry_oauth2_flow.async_get_config_entry_implementation(
             hass, entry
@@ -108,6 +120,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         try:
             devices = await asyncio.wait_for(api.async_get_devices(), timeout=30)
+            _log_api_response("get_devices", devices)
             _LOGGER.info("Discovered %d Navimow device(s)", len(devices))
         except asyncio.TimeoutError as err:
             _LOGGER.error("Timeout discovering devices: %s", err)
@@ -126,6 +139,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         try:
             mqtt_info = await asyncio.wait_for(api.async_get_mqtt_user_info(), timeout=30)
+            _log_api_response("get_mqtt_user_info", mqtt_info)
         except asyncio.TimeoutError as err:
             _LOGGER.error("Timeout getting MQTT info: %s", err)
             raise ConfigEntryNotReady(f"Timeout getting MQTT info: {err}") from err

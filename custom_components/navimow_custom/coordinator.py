@@ -85,6 +85,17 @@ class NavimowCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         except Exception:
             _LOGGER.warning("Navimow payload (fallback): %s", payload)
 
+    def _log_api_response(self, label: str, payload: Any) -> None:
+        """Log raw API response payloads for troubleshooting."""
+        try:
+            _LOGGER.warning(
+                "Navimow API response (%s): %s",
+                label,
+                json.dumps(payload, default=lambda obj: vars(obj), ensure_ascii=True),
+            )
+        except Exception:
+            _LOGGER.warning("Navimow API response (%s) fallback: %s", label, payload)
+
     async def _async_ensure_valid_token(self) -> str | None:
         if not self.oauth_session:
             return None
@@ -145,6 +156,7 @@ class NavimowCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         if is_mqtt_stale and can_http_fetch:
             try:
                 status = await self.api.async_get_device_status(self.device.id)
+                self._log_api_response("get_device_status", status)
                 self._last_status = status
                 self._last_http_fetch = now
                 self._last_data_source = "http_fallback"
