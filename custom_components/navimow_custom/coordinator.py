@@ -141,6 +141,11 @@ class NavimowCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             self._last_data_source,
         )
         self.data = self._build_data()
+        try:
+            import json
+            _LOGGER.info("NavimowCoordinator data update: %s", json.dumps(self.data, default=str, indent=2))
+        except Exception as log_err:
+            _LOGGER.warning("Failed to log NavimowCoordinator data as JSON: %s", log_err)
         return self.data
 
     def _handle_state(self, state: Any) -> None:
