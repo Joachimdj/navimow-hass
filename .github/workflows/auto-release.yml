@@ -1,0 +1,36 @@
+name: Auto Release on Push
+
+on:
+  push:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Read integration version
+        id: version
+        run: |
+          VERSION=$(python -c "import json; print(json.load(open('custom_components/navimow_custom/manifest.json'))['version'])")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Build integration archive
+        run: |
+          mkdir -p dist
+          cd custom_components
+          zip -r ../dist/navimow_custom.zip navimow_custom -x "*/__pycache__/*" "*.pyc"
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}-${{ github.run_number }}
+          name: Navimow Custom v${{ steps.version.outputs.version }} (build ${{ github.run_number }})
+          generate_release_notes: true
+          files: |
+            dist/navimow_custom.zip

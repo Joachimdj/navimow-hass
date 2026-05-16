@@ -1,5 +1,6 @@
 """The Navimow Custom integration."""
 import asyncio
+import importlib
 import logging
 from typing import Any
 from urllib.parse import urlparse
@@ -27,6 +28,11 @@ from .services import async_setup_services
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS: list[Platform] = [Platform.LAWN_MOWER, Platform.SENSOR]
+
+
+def _preload_platform_module(platform: Platform) -> None:
+    """Import platform module outside the event loop."""
+    importlib.import_module(f"{__package__}.{platform}")
 
 
 async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
@@ -211,6 +217,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             "coordinators": coordinators,
             "oauth_session": oauth_session,
         }
+
+        for platform in PLATFORMS:
+            await hass.async_add_executor_job(_preload_platform_module, platform)
 
         await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
