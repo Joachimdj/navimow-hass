@@ -101,8 +101,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         )
 
         try:
-            devices = await api.async_get_devices()
+            devices = await asyncio.wait_for(api.async_get_devices(), timeout=30)
             _LOGGER.info("Discovered %d Navimow device(s)", len(devices))
+        except asyncio.TimeoutError as err:
+            _LOGGER.error("Timeout discovering devices: %s", err)
+            raise ConfigEntryNotReady(f"Timeout discovering devices: {err}") from err
         except MowerAPIError as err:
             _LOGGER.error("Failed to discover devices: %s", err)
             raise ConfigEntryNotReady(f"Failed to discover devices: {err}") from err
@@ -116,7 +119,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             _LOGGER.warning("No Navimow devices found")
 
         try:
-            mqtt_info = await api.async_get_mqtt_user_info()
+            mqtt_info = await asyncio.wait_for(api.async_get_mqtt_user_info(), timeout=30)
+        except asyncio.TimeoutError as err:
+            _LOGGER.error("Timeout getting MQTT info: %s", err)
+            raise ConfigEntryNotReady(f"Timeout getting MQTT info: {err}") from err
         except MowerAPIError as err:
             _LOGGER.error("Failed to get MQTT info: %s", err)
             raise ConfigEntryNotReady(f"Failed to get MQTT info: {err}") from err
@@ -192,7 +198,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 oauth_session=oauth_session,
             )
             await coordinator.async_setup()
-            await coordinator.async_config_entry_first_refresh()
+            try:
+                await asyncio.wait_for(coordinator.async_config_entry_first_refresh(), timeout=30)
+            except asyncio.TimeoutError:
+                _LOGGER.warning("Timeout during first coordinator refresh for device %s", device.id)
             coordinators[device.id] = coordinator
 
         hass.data[DOMAIN][entry.entry_id] = {
