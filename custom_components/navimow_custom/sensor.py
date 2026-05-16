@@ -73,10 +73,10 @@ SENSOR_DESCRIPTIONS: tuple[NavimowSensorEntityDescription, ...] = (
     NavimowSensorEntityDescription(
         key="error_code",
         translation_key="error_code",
-        device_class=SensorDeviceClass.ENUM,
         entity_registry_enabled_default=True,
         value_fn=lambda coordinator: (
-            status.error_code.value if (status := coordinator.get_device_state()) else None
+            getattr(getattr(coordinator.get_device_state(), 'error_code', None), 'value', None)
+            if coordinator.get_device_state() is not None else None
         ),
     ),
     NavimowSensorEntityDescription(
@@ -84,7 +84,8 @@ SENSOR_DESCRIPTIONS: tuple[NavimowSensorEntityDescription, ...] = (
         translation_key="error_message",
         entity_registry_enabled_default=False,
         value_fn=lambda coordinator: (
-            status.error_message if (status := coordinator.get_device_state()) else None
+            getattr(coordinator.get_device_state(), 'error_message', None)
+            if coordinator.get_device_state() is not None else None
         ),
     ),
     NavimowSensorEntityDescription(
