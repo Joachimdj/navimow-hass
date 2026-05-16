@@ -26,6 +26,34 @@ class NavimowSensorEntityDescription(SensorEntityDescription):
     value_fn: Callable[[NavimowCoordinator], Any]
 
 
+def _status_attr(
+    coordinator: NavimowCoordinator, attr: str, default: Any = None
+) -> Any:
+    """Safely read an attribute from the current status payload."""
+    status = coordinator.get_device_state()
+    if status is None:
+        return default
+    return getattr(status, attr, default)
+
+
+def _status_enum_value(coordinator: NavimowCoordinator, attr: str) -> Any:
+    """Safely read enum-like values that may expose `.value`."""
+    raw_value = _status_attr(coordinator, attr)
+    if raw_value is None:
+        return None
+    return getattr(raw_value, "value", raw_value)
+
+
+def _position_attr(coordinator: NavimowCoordinator, key: str) -> Any:
+    """Safely read coordinates from dict or object payloads."""
+    position = _status_attr(coordinator, "position")
+    if position is None:
+        return None
+    if isinstance(position, dict):
+        return position.get(key)
+    return getattr(position, key, None)
+
+
 SENSOR_DESCRIPTIONS: tuple[NavimowSensorEntityDescription, ...] = (
     NavimowSensorEntityDescription(
         key="battery",
@@ -33,9 +61,7 @@ SENSOR_DESCRIPTIONS: tuple[NavimowSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.BATTERY,
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
-        value_fn=lambda coordinator: (
-            status.battery if (status := coordinator.get_device_state()) else None
-        ),
+        value_fn=lambda coordinator: _status_attr(coordinator, "battery"),
     ),
     NavimowSensorEntityDescription(
         key="signal_strength",
@@ -44,9 +70,7 @@ SENSOR_DESCRIPTIONS: tuple[NavimowSensorEntityDescription, ...] = (
         native_unit_of_measurement="dBm",
         state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=True,
-        value_fn=lambda coordinator: (
-            status.signal_strength if (status := coordinator.get_device_state()) else None
-        ),
+        value_fn=lambda coordinator: _status_attr(coordinator, "signal_strength"),
     ),
     NavimowSensorEntityDescription(
         key="mowing_time",
@@ -55,9 +79,7 @@ SENSOR_DESCRIPTIONS: tuple[NavimowSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTime.SECONDS,
         state_class=SensorStateClass.TOTAL_INCREASING,
         entity_registry_enabled_default=True,
-        value_fn=lambda coordinator: (
-            status.mowing_time if (status := coordinator.get_device_state()) else None
-        ),
+        value_fn=lambda coordinator: _status_attr(coordinator, "mowing_time"),
     ),
     NavimowSensorEntityDescription(
         key="total_mowing_time",
@@ -66,49 +88,33 @@ SENSOR_DESCRIPTIONS: tuple[NavimowSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTime.SECONDS,
         state_class=SensorStateClass.TOTAL_INCREASING,
         entity_registry_enabled_default=True,
-        value_fn=lambda coordinator: (
-            status.total_mowing_time if (status := coordinator.get_device_state()) else None
-        ),
+        value_fn=lambda coordinator: _status_attr(coordinator, "total_mowing_time"),
     ),
     NavimowSensorEntityDescription(
         key="error_code",
         translation_key="error_code",
         entity_registry_enabled_default=True,
-        value_fn=lambda coordinator: (
-            getattr(getattr(coordinator.get_device_state(), 'error_code', None), 'value', None)
-            if coordinator.get_device_state() is not None else None
-        ),
+        value_fn=lambda coordinator: _status_enum_value(coordinator, "error_code"),
     ),
     NavimowSensorEntityDescription(
         key="error_message",
         translation_key="error_message",
         entity_registry_enabled_default=False,
-        value_fn=lambda coordinator: (
-            getattr(coordinator.get_device_state(), 'error_message', None)
-            if coordinator.get_device_state() is not None else None
-        ),
+        value_fn=lambda coordinator: _status_attr(coordinator, "error_message"),
     ),
     NavimowSensorEntityDescription(
         key="latitude",
         translation_key="latitude",
         state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=False,
-        value_fn=lambda coordinator: (
-            position.get("lat")
-            if (status := coordinator.get_device_state()) and (position := status.position)
-            else None
-        ),
+        value_fn=lambda coordinator: _position_attr(coordinator, "lat"),
     ),
     NavimowSensorEntityDescription(
         key="longitude",
         translation_key="longitude",
         state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=False,
-        value_fn=lambda coordinator: (
-            position.get("lng")
-            if (status := coordinator.get_device_state()) and (position := status.position)
-            else None
-        ),
+        value_fn=lambda coordinator: _position_attr(coordinator, "lng"),
     ),
 )
 

@@ -1,4 +1,5 @@
 """DataUpdateCoordinator for Navimow Custom integration."""
+import json
 import logging
 import time
 from datetime import timedelta
@@ -63,6 +64,26 @@ class NavimowCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 "last_http_fetch_monotonic": self._last_http_fetch,
             },
         }
+
+    def _log_payload(self, source: str) -> None:
+        """Log received payload in JSON for troubleshooting."""
+        payload = {
+            "source": source,
+            "device_id": self.device.id,
+            "status": self._last_status,
+            "meta": {
+                "last_data_source": self._last_data_source,
+                "last_mqtt_update_monotonic": self._last_mqtt_update,
+                "last_http_fetch_monotonic": self._last_http_fetch,
+            },
+        }
+        try:
+            _LOGGER.warning(
+                "Navimow payload: %s",
+                json.dumps(payload, default=lambda obj: vars(obj), ensure_ascii=True),
+            )
+        except Exception:
+            _LOGGER.warning("Navimow payload (fallback): %s", payload)
 
     async def _async_ensure_valid_token(self) -> str | None:
         if not self.oauth_session:
@@ -141,11 +162,7 @@ class NavimowCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             self._last_data_source,
         )
         self.data = self._build_data()
-        try:
-            import json
-            _LOGGER.info("NavimowCoordinator data update: %s", json.dumps(self.data, default=str, indent=2))
-        except Exception as log_err:
-            _LOGGER.warning("Failed to log NavimowCoordinator data as JSON: %s", log_err)
+        self._log_payload("coordinator_update")
         return self.data
 
     def _handle_state(self, state: Any) -> None:
@@ -161,6 +178,7 @@ class NavimowCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 self._last_mqtt_update = time.monotonic()
                 self._last_data_source = "mqtt"
                 self.data = self._build_data()
+                self._log_payload("mqtt_callback")
             except Exception as err:
                 _LOGGER.warning("Failed to handle state update: %s", err)
 
